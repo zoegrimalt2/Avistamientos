@@ -81,7 +81,7 @@
   <div id="avisoDemo" class="aviso oculto">Modo demostración: la app aún no está conectada con Google, así que los datos no se guardan.</div>
   <div id="avisoPendientes" class="pendientes oculto"></div>
 
-  <form id="form" novalidate>
+  <form id="form" novalidate onsubmit="return false">
     <div id="resumenError" class="resumen-error oculto" role="alert"></div>
 
     <!-- 1. Quién -->
@@ -199,7 +199,7 @@
    ÚNICO DATO A CAMBIAR: pega aquí la URL de tu implementación de
    Google Apps Script (la que termina en /exec), entre las comillas.
    ===================================================================== */
-var API_URL = 'var API_URL = 'https://script.google.com/macros/s/AKfycbxlpw-VMmMLOYti4YGcVkGoAGauIygRPzB0CWpx1QsDFG7X3qORib1FJm5KLrBv8WTV8A/exec';';
+var API_URL = 'https://script.google.com/macros/s/AKfycbxlpw-VMmMLOYti4YGcVkGoAGauIygRPzB0CWpx1QsDFG7X3qORib1FJm5KLrBv8WTV8A/exec';
 
 (function(){
   /* ---------- Listas por defecto (se actualizan solas desde Google) ---------- */
