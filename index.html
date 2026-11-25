@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>SECAC · Registro de avistamientos</title>
+<meta name="theme-color" content="#0b3954">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icono-192.png">
+<link rel="apple-touch-icon" href="icono-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Avistamientos">
+<meta name="mobile-web-app-capable" content="yes">
+<style>
+  :root{
+    --mar:#0b3954; --mar2:#087e8b; --espuma:#e8f4f5; --arena:#fafaf7;
+    --texto:#1d2b36; --suave:#5b6b78; --borde:#d5e2e6; --error:#c0392b; --ok:#1e8e5a;
+    --radio:14px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--arena);color:var(--texto);font-size:16px;line-height:1.45}
+  header{background:linear-gradient(160deg,var(--mar) 0%,var(--mar2) 100%);color:#fff;padding:28px 20px 46px;position:relative;overflow:hidden}
+  header h1{margin:0;font-size:1.45rem;letter-spacing:.2px}
+  header p{margin:6px 0 0;opacity:.85;font-size:.95rem}
+  .marca{display:inline-block;font-weight:800;letter-spacing:2px;font-size:.8rem;background:rgba(255,255,255,.15);padding:4px 10px;border-radius:99px;margin-bottom:12px}
+  header svg{position:absolute;left:0;bottom:-1px;width:100%;height:28px}
+  main{max-width:640px;margin:-22px auto 40px;padding:0 14px;position:relative}
+  .aviso{background:#fff7e0;border:1px solid #f0d98c;color:#6b5400;border-radius:10px;padding:10px 14px;font-size:.88rem;margin-bottom:12px}
+  .tarjeta{background:#fff;border:1px solid var(--borde);border-radius:var(--radio);padding:18px;margin-bottom:14px;box-shadow:0 1px 2px rgba(11,57,84,.04)}
+  .tarjeta h2{margin:0 0 14px;font-size:1rem;color:var(--mar);display:flex;align-items:center;gap:8px}
+  .tarjeta h2 .n{background:var(--espuma);color:var(--mar2);width:24px;height:24px;border-radius:50%;display:inline-grid;place-items:center;font-size:.8rem}
+  label{display:block;font-weight:600;font-size:.92rem;margin:12px 0 6px}
+  label:first-of-type{margin-top:0}
+  .req{color:var(--mar2)}
+  .ayuda{font-weight:400;color:var(--suave);font-size:.82rem}
+  input[type=text],input[type=email],input[type=number],input[type=date],input[type=time],select,textarea{
+    width:100%;padding:12px;border:1px solid var(--borde);border-radius:10px;font:inherit;background:#fff;color:inherit;-webkit-appearance:none;appearance:none}
+  select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235b6b78' stroke-width='2' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:34px}
+  textarea{min-height:80px;resize:vertical}
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--mar2);outline-offset:1px;border-color:transparent}
+  .fila{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .opciones{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{position:relative}
+  .chip input{position:absolute;opacity:0;pointer-events:none}
+  .chip span{display:inline-block;padding:9px 13px;border:1px solid var(--borde);border-radius:99px;font-size:.9rem;cursor:pointer;user-select:none;background:#fff}
+  .chip input:checked+span{background:var(--mar2);border-color:var(--mar2);color:#fff}
+  .chip input:focus-visible+span{outline:2px solid var(--mar);outline-offset:2px}
+  .oculto{display:none!important}
+  button{font:inherit;cursor:pointer;border-radius:10px;border:0}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 16px;font-weight:600}
+  .btn-sec{background:var(--espuma);color:var(--mar)}
+  .btn-pri{background:var(--mar);color:#fff;width:100%;padding:16px;font-size:1.05rem}
+  .btn-pri:disabled{opacity:.6;cursor:wait}
+  .gps-estado{font-size:.85rem;color:var(--suave);margin-top:8px}
+  .gps-estado.ok{color:var(--ok)}
+  .fotos-botones{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .miniaturas{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px;margin-top:12px}
+  .mini{position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;background:var(--espuma)}
+  .mini img{width:100%;height:100%;object-fit:cover;display:block}
+  .mini button{position:absolute;top:4px;right:4px;width:26px;height:26px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;font-size:15px;line-height:26px;padding:0}
+  .foto-vacia{border:2px dashed var(--borde);border-radius:12px;padding:18px;text-align:center;color:var(--suave);font-size:.9rem;margin-top:12px}
+  .error-campo{color:var(--error);font-size:.85rem;margin-top:6px}
+  .resumen-error{background:#fdecea;border:1px solid #f5c2bc;color:var(--error);border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:.92rem}
+  .exito{text-align:center;padding:36px 20px}
+  .exito .icono{font-size:3rem}
+  .exito h2{justify-content:center;font-size:1.3rem}
+  .codigo{font-family:ui-monospace,monospace;background:var(--espuma);padding:4px 10px;border-radius:8px;display:inline-block;margin:6px 0 18px}
+  .pendientes{background:#eef6ff;border:1px solid #c6dcf5;color:#1f4f82;border-radius:10px;padding:10px 14px;font-size:.88rem;margin-bottom:12px}
+  footer{text-align:center;color:var(--suave);font-size:.8rem;padding:0 20px 30px}
+</style>
+</head>
+<body>
+<header>
+  <div class="marca">SECAC</div>
+  <h1>Registro de avistamientos de cetáceos</h1>
+  <p>¿Has visto ballenas o delfines? Cuéntanoslo y ayúdanos a conocerlos mejor.</p>
+  <svg viewBox="0 0 400 28" preserveAspectRatio="none" aria-hidden="true"><path d="M0 14 C 60 0, 120 28, 200 14 S 340 0, 400 14 V28 H0Z" fill="#fafaf7"/></svg>
+</header>
+
+<main>
+  <div id="avisoDemo" class="aviso oculto">Modo demostración: la app aún no está conectada con Google, así que los datos no se guardan.</div>
+  <div id="avisoPendientes" class="pendientes oculto"></div>
+
+  <form id="form" novalidate>
+    <div id="resumenError" class="resumen-error oculto" role="alert"></div>
+
+    <!-- 1. Quién -->
+    <section class="tarjeta">
+      <h2><span class="n">1</span>¿Quién reporta?</h2>
+      <div class="opciones" id="reporta">
+        <label class="chip"><input type="radio" name="reporta" value="Empresa de avistamiento"><span>Empresa de avistamiento</span></label>
+        <label class="chip"><input type="radio" name="reporta" value="Particular"><span>Particular</span></label>
+        <label class="chip"><input type="radio" name="reporta" value="SECAC"><span>SECAC</span></label>
+      </div>
+      <div id="bloqueEmpresa" class="oculto">
+        <label for="empresa">Empresa <span class="req">*</span></label>
+        <select id="empresa"><option value="">Elige tu empresa…</option></select>
+      </div>
+      <div class="fila">
+        <div>
+          <label for="observador">Tu nombre <span class="ayuda">(opcional)</span></label>
+          <input type="text" id="observador" autocomplete="name">
+        </div>
+        <div>
+          <label for="contacto">Email o teléfono <span class="ayuda">(opcional)</span></label>
+          <input type="text" id="contacto" autocomplete="email">
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. Fotos -->
+    <section class="tarjeta">
+      <h2><span class="n">2</span>Fotografías <span class="req">*</span></h2>
+      <p class="ayuda" style="margin:0 0 12px">Lo más importante. Si puedes, fotografía la aleta dorsal de lado: sirve para identificar a cada individuo.</p>
+      <div class="fotos-botones">
+        <button type="button" class="btn btn-sec" id="btnCamara">📷 Hacer foto</button>
+        <button type="button" class="btn btn-sec" id="btnGaleria">🖼️ Desde galería</button>
+      </div>
+      <input type="file" id="inCamara" accept="image/*" capture="environment" class="oculto">
+      <input type="file" id="inGaleria" accept="image/*" multiple class="oculto">
+      <div id="fotoVacia" class="foto-vacia">Aún no hay fotos</div>
+      <div id="miniaturas" class="miniaturas"></div>
+    </section>
+
+    <!-- 3. Especie -->
+    <section class="tarjeta">
+      <h2><span class="n">3</span>Especie e individuos</h2>
+      <label for="especie">Especie <span class="req">*</span></label>
+      <select id="especie"><option value="">Elige la especie…</option></select>
+      <div id="bloqueEspecieDetalle" class="oculto">
+        <label for="especieDetalle">¿Qué crees que era? <span class="ayuda">(descríbelo)</span></label>
+        <input type="text" id="especieDetalle">
+      </div>
+      <label for="identificacion">Identificación del individuo <span class="ayuda">(si se conoce: nombre, código de catálogo o marcas)</span></label>
+      <input type="text" id="identificacion">
+      <div class="fila">
+        <div>
+          <label for="individuos">Nº de individuos <span class="req">*</span></label>
+          <input type="number" id="individuos" min="1" inputmode="numeric" placeholder="Ej. 12">
+        </div>
+        <div>
+          <label for="crias">Nº de crías</label>
+          <input type="number" id="crias" min="0" inputmode="numeric" placeholder="0">
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. Dónde y cuándo -->
+    <section class="tarjeta">
+      <h2><span class="n">4</span>Dónde y cuándo</h2>
+      <button type="button" class="btn btn-sec" id="btnGps" style="width:100%">📍 Usar mi ubicación actual</button>
+      <div id="gpsEstado" class="gps-estado">Pulsa el botón estando en el lugar del avistamiento, o escribe las coordenadas.</div>
+      <div class="fila">
+        <div><label for="lat">Latitud</label><input type="text" id="lat" placeholder="28.0581"></div>
+        <div><label for="lon">Longitud</label><input type="text" id="lon" placeholder="-16.7861"></div>
+      </div>
+      <div class="gps-estado" id="coordInfo">Acepta cualquier formato: 28.0581 · 28°03.49'N · 28°03'29"N. Puedes pegar las dos juntas en Latitud.</div>
+      <label for="lugar">Lugar <span class="ayuda">(zona, costa, puerto de salida…)</span></label>
+      <input type="text" id="lugar" placeholder="Ej. Frente a Los Gigantes, Tenerife">
+      <div class="fila">
+        <div><label for="fecha">Fecha <span class="req">*</span></label><input type="date" id="fecha"></div>
+        <div><label for="hora">Hora <span class="req">*</span></label><input type="time" id="hora"></div>
+      </div>
+    </section>
+
+    <!-- 5. Comportamiento -->
+    <section class="tarjeta">
+      <h2><span class="n">5</span>Comportamiento</h2>
+      <label>¿Qué estaban haciendo? <span class="ayuda">(marca todas las que veas)</span></label>
+      <div class="opciones" id="comportamiento"></div>
+      <label>¿Hubo alguna interacción o actividad humana relevante?</label>
+      <div class="opciones">
+        <label class="chip"><input type="radio" name="interaccion" value="No" checked><span>No</span></label>
+        <label class="chip"><input type="radio" name="interaccion" value="Sí"><span>Sí</span></label>
+      </div>
+      <div id="bloqueInteraccion" class="oculto">
+        <label for="interaccionDetalle">Descríbela <span class="ayuda">(con la embarcación, otras embarcaciones, pesca, bañistas…)</span></label>
+        <textarea id="interaccionDetalle"></textarea>
+      </div>
+      <label for="observaciones">Otras observaciones</label>
+      <textarea id="observaciones" placeholder="Cualquier detalle que te parezca útil"></textarea>
+    </section>
+
+    <button type="submit" class="btn btn-pri" id="btnEnviar">Enviar avistamiento</button>
+  </form>
+
+  <section id="pantallaExito" class="tarjeta exito oculto">
+    <div class="icono">🐋</div>
+    <h2>¡Gracias por tu avistamiento!</h2>
+    <p id="exitoTexto">Se ha registrado correctamente con el código:</p>
+    <div class="codigo" id="exitoCodigo"></div>
+    <button type="button" class="btn btn-pri" id="btnOtro">Registrar otro avistamiento</button>
+  </section>
+</main>
+<footer>Datos recogidos por SECAC con fines de investigación y conservación de cetáceos.</footer>
+
+<script>
+/* =====================================================================
+   ÚNICO DATO A CAMBIAR: pega aquí la URL de tu implementación de
+   Google Apps Script (la que termina en /exec), entre las comillas.
+   ===================================================================== */
+var API_URL = 'PEGA_AQUI_TU_URL_EXEC';
+
+(function(){
+  /* ---------- Listas por defecto (se actualizan solas desde Google) ---------- */
+  var CONFIG_DEFECTO = {"empresas":["Mar Azul Tours (demo)","Avistamientos Atlántico (demo)","Cetáceos del Sur (demo)"],"especies":["Calderón tropical (Globicephala macrorhynchus)","Delfín mular (Tursiops truncatus)","Delfín moteado del Atlántico (Stenella frontalis)","Delfín común (Delphinus delphis)","Delfín listado (Stenella coeruleoalba)","Delfín de dientes rugosos (Steno bredanensis)","Delfín de Fraser (Lagenodelphis hosei)","Delfín acróbata de hocico largo (Stenella longirostris)","Calderón gris (Grampus griseus)","Falsa orca (Pseudorca crassidens)","Orca (Orcinus orca)","Cachalote (Physeter macrocephalus)","Cachalote pigmeo (Kogia breviceps)","Cachalote enano (Kogia sima)","Zifio de Cuvier (Ziphius cavirostris)","Zifio de Blainville (Mesoplodon densirostris)","Zifio de Gervais (Mesoplodon europaeus)","Rorcual tropical (Balaenoptera edeni/brydei)","Rorcual norteño (Balaenoptera borealis)","Rorcual común (Balaenoptera physalus)","Rorcual aliblanco (Balaenoptera acutorostrata)","Ballena azul (Balaenoptera musculus)","Yubarta (Megaptera novaeangliae)","Delfín no identificado","Zifio no identificado","Rorcual / ballena no identificado","No lo sé / Otra"],"comportamientos":["Desplazamiento","Alimentación","Descanso","Socialización","Saltos / comportamiento aéreo","Juego","Navegando en la proa (bow-riding)","Se acercan a la embarcación","Evitan la embarcación","Con otras especies","Otro"],"maxFotos":5};
+
+  var DEMO = !/^https:\/\/script\.google\.com\/macros\/s\/.+\/exec$/.test(API_URL);
+  var CLAVE_PERFIL = 'secac_perfil', CLAVE_CONFIG = 'secac_config';
+  var CONFIG = leer(CLAVE_CONFIG, null) || CONFIG_DEFECTO;
+  var fotos = []; // {data, tipo, url}
+  var $ = function(id){ return document.getElementById(id); };
+
+  if (DEMO) $('avisoDemo').classList.remove('oculto');
+
+  /* ---------- Modo sin conexión: guardar la página en el móvil ---------- */
+  if ('serviceWorker' in navigator && location.protocol === 'https:') {
+    navigator.serviceWorker.register('sw.js').catch(function(){});
+  }
+
+  /* ---------- Almacenamiento seguro ---------- */
+  function leer(k, def){ try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : def; } catch(e){ return def; } }
+  function escribir(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch(e){ return false; } }
+
+  /* ---------- Cola de envíos pendientes (IndexedDB: caben muchas fotos) ---------- */
+  var cola = (function(){
+    var dbP = null;
+    function db(){
+      if (dbP) return dbP;
+      dbP = new Promise(function(ok, ko){
+        if (!window.indexedDB) return ko(new Error('sin IndexedDB'));
+        var r = indexedDB.open('secac', 1);
+        r.onupgradeneeded = function(){ r.result.createObjectStore('pendientes', { keyPath: 'uid' }); };
+        r.onsuccess = function(){ ok(r.result); };
+        r.onerror = function(){ ko(r.error); };
+      });
+      return dbP;
+    }
+    function tx(modo, fn){
+      return db().then(function(d){ return new Promise(function(ok, ko){
+        var t = d.transaction('pendientes', modo), s = t.objectStore('pendientes'), res = fn(s);
+        t.oncomplete = function(){ ok(res && res.result); };
+        t.onerror = function(){ ko(t.error); };
+      }); });
+    }
+    return {
+      poner: function(x){ return tx('readwrite', function(s){ return s.put(x); }); },
+      quitar: function(uid){ return tx('readwrite', function(s){ return s.delete(uid); }); },
+      todos: function(){ return tx('readonly', function(s){ return s.getAll(); }); }
+    };
+  })();
+
+  /* ---------- Listas ---------- */
+  function pintarListas(){
+    var emp = $('empresa'), esp = $('especie'), comp = $('comportamiento');
+    var vEmp = emp.value, vEsp = esp.value;
+    var marcados = Array.prototype.map.call(document.querySelectorAll('input[name="comportamiento"]:checked'), function(i){ return i.value; });
+    emp.length = 1; esp.length = 1; comp.innerHTML = '';
+    CONFIG.empresas.forEach(function(e){ var o = document.createElement('option'); o.value = o.textContent = e; emp.appendChild(o); });
+    CONFIG.especies.forEach(function(e){ var o = document.createElement('option'); o.value = o.textContent = e; esp.appendChild(o); });
+    CONFIG.comportamientos.forEach(function(c){
+      var l = document.createElement('label'); l.className = 'chip';
+      var i = document.createElement('input'); i.type = 'checkbox'; i.name = 'comportamiento'; i.value = c; i.checked = marcados.indexOf(c) > -1;
+      var s = document.createElement('span'); s.textContent = c;
+      l.appendChild(i); l.appendChild(s); comp.appendChild(l);
+    });
+    emp.value = vEmp; esp.value = vEsp;
+  }
+
+  function actualizarConfig(){
+    if (DEMO || !navigator.onLine) return;
+    fetch(API_URL + '?accion=config').then(function(r){ return r.json(); }).then(function(c){
+      if (c && c.empresas && c.especies){
+        CONFIG = c; escribir(CLAVE_CONFIG, c); pintarListas(); cargarPerfil(true);
+      }
+    }).catch(function(){});
+  }
+
+  /* ---------- Mostrar/ocultar ---------- */
+  function valorRadio(n){ var r = document.querySelector('input[name="'+n+'"]:checked'); return r ? r.value : ''; }
+  function actualizar(){
+    $('bloqueEmpresa').classList.toggle('oculto', valorRadio('reporta') !== 'Empresa de avistamiento');
+    $('bloqueInteraccion').classList.toggle('oculto', valorRadio('interaccion') !== 'Sí');
+    $('bloqueEspecieDetalle').classList.toggle('oculto', !(/no identificado|No lo sé/i.test($('especie').value)));
+  }
+  document.addEventListener('change', actualizar);
+
+  /* ---------- Fecha y hora por defecto ---------- */
+  function dos(n){ return (n<10?'0':'')+n; }
+  function ponerAhora(){
+    var d = new Date();
+    $('fecha').value = d.getFullYear()+'-'+dos(d.getMonth()+1)+'-'+dos(d.getDate());
+    $('hora').value = dos(d.getHours())+':'+dos(d.getMinutes());
+  }
+
+  /* ---------- Recordar quién reporta ---------- */
+  function cargarPerfil(soloEmpresa){
+    var p = leer(CLAVE_PERFIL, null); if (!p) return;
+    if (p.empresa && CONFIG.empresas.indexOf(p.empresa) > -1) $('empresa').value = p.empresa;
+    if (soloEmpresa) return;
+    var r = document.querySelector('input[name="reporta"][value="'+p.reporta+'"]'); if (r) r.checked = true;
+    $('observador').value = p.observador || ''; $('contacto').value = p.contacto || '';
+  }
+
+  /* =====================================================================
+     COORDENADAS: entiende casi cualquier formato
+       28.0581 / -16.7861 · 28,0581 · "28.0581, -16.7861" (las dos juntas)
+       28°03.49'N 16°47.17'W · 28º 3' 29" N · N 28 03.49 · 16°47'10"O (Oeste)
+     ===================================================================== */
+  function aNum(s){ return parseFloat(String(s).replace(',', '.')); }
+
+  // Una sola coordenada. eje: 'lat' | 'lon'. Devuelve número o NaN.
+  function parsearUna(txt, eje){
+    var s = String(txt || '').trim().toUpperCase()
+      .replace(/[º˚]/g, '°').replace(/[’′‘`´]/g, "'").replace(/[”″“]/g, '"').replace(/''/g, '"');
+    if (!s) return NaN;
+    var hemi = (s.match(/[NSEWO]/) || [''])[0];
+    var signo = /^-/.test(s) || hemi === 'S' || hemi === 'W' || hemi === 'O' ? -1 : 1;
+    var partes = s.replace(/[NSEWO+\-]/g, ' ').match(/\d+(?:[.,]\d+)?/g);
+    if (!partes) return NaN;
+    var g = aNum(partes[0]), m = partes[1] ? aNum(partes[1]) : 0, sg = partes[2] ? aNum(partes[2]) : 0;
+    if (partes.length > 3 || m >= 60 || sg >= 60) return NaN;
+    var v = signo * (g + m / 60 + sg / 3600);
+    if (hemi && eje === 'lat' && /[EWO]/.test(hemi)) return NaN;
+    if (hemi && eje === 'lon' && /[NS]/.test(hemi)) return NaN;
+    var max = eje === 'lat' ? 90 : 180;
+    return Math.abs(v) <= max ? Math.round(v * 1e6) / 1e6 : NaN;
+  }
+
+  // Texto con las dos coordenadas juntas. Devuelve {lat, lon} o null.
+  function parsearPar(txt){
+    var s = String(txt || '').trim().toUpperCase().replace(/[º˚]/g, '°');
+    if (!s) return null;
+    // Con letras de hemisferio: cortar tras la N/S (o antes, si van delante)
+    var m = [s.match(/^(.*?[NS])\s*[,;]?\s*(.*[EWO].*)$/), s.match(/^([NS].*?)\s*[,;]?\s*([EWO].*)$/)]
+      .filter(function(x){ return x && /\d/.test(x[1]) && /\d/.test(x[2]); })[0];
+    if (m){
+      var a = parsearUna(m[1], 'lat'), b = parsearUna(m[2], 'lon');
+      return isNaN(a) || isNaN(b) ? null : { lat: a, lon: b };
+    }
+    // Decimales: "28.0581, -16.7861" · "28,0581 -16,7861" · "28.0581 -16.7861"
+    var conPunto = /\./.test(s);
+    var nums = conPunto ? s.match(/-?\d+(?:\.\d+)?/g) : s.match(/-?\d+(?:,\d+)?/g);
+    var separados = conPunto ? /[,;]|\s-/.test(s) : /;|\s-|,\s*-|\d,\s+\d/.test(s);
+    if (nums && nums.length === 2 && separados && !/[°'"]/.test(s)){
+      var la = aNum(nums[0]), lo = aNum(nums[1]);
+      if (Math.abs(la) <= 90 && Math.abs(lo) <= 180) return { lat: la, lon: lo };
+    }
+    return null;
+  }
+
+  function revisarCoordenadas(){
+    var info = $('coordInfo'), latT = $('lat').value, lonT = $('lon').value;
+    // ¿Pegaron las dos juntas en un solo campo?
+    var par = parsearPar(latT) || (!latT || latT === lonT ? parsearPar(lonT) : null);
+    if (par){ $('lat').value = latT = String(par.lat); $('lon').value = lonT = String(par.lon); }
+    if (!latT && !lonT){ info.className = 'gps-estado'; info.textContent = 'Acepta cualquier formato: 28.0581 · 28°03.49\'N · 28°03\'29"N. Puedes pegar las dos juntas en Latitud.'; return null; }
+    var la = parsearUna(latT, 'lat'), lo = parsearUna(lonT, 'lon');
+    if (isNaN(la) || isNaN(lo) || !latT || !lonT){
+      info.className = 'gps-estado error-campo';
+      info.textContent = !latT || !lonT ? 'Falta ' + (!latT ? 'la latitud' : 'la longitud') + '.'
+        : 'No entiendo ' + (isNaN(la) ? 'la latitud' : 'la longitud') + '. Ejemplos válidos: 28.0581 · 28°03.49\'N';
+      return null;
+    }
+    info.className = 'gps-estado ok';
+    info.innerHTML = '';
+    info.appendChild(document.createTextNode('✓ ' + la.toFixed(5) + ', ' + lo.toFixed(5) + ' · '));
+    var a = document.createElement('a'); a.href = 'https://www.google.com/maps?q=' + la + ',' + lo; a.target = '_blank'; a.rel = 'noopener'; a.textContent = 'ver en el mapa';
+    info.appendChild(a);
+    return { lat: la, lon: lo };
+  }
+  ['lat', 'lon'].forEach(function(id){
+    $(id).addEventListener('blur', revisarCoordenadas);
+    $(id).addEventListener('paste', function(){ setTimeout(revisarCoordenadas, 0); });
+  });
+
+  /* ---------- GPS ---------- */
+  $('btnGps').addEventListener('click', function(){
+    var est = $('gpsEstado');
+    if (!navigator.geolocation){ est.textContent = 'Este navegador no permite obtener la ubicación. Escríbela a mano.'; return; }
+    est.className = 'gps-estado'; est.textContent = 'Buscando señal GPS…';
+    navigator.geolocation.getCurrentPosition(function(p){
+      $('lat').value = p.coords.latitude.toFixed(6);
+      $('lon').value = p.coords.longitude.toFixed(6);
+      $('lat').dataset.precision = Math.round(p.coords.accuracy);
+      est.className = 'gps-estado ok';
+      est.textContent = '✓ Ubicación obtenida (precisión ±' + Math.round(p.coords.accuracy) + ' m)';
+      revisarCoordenadas();
+    }, function(err){
+      est.className = 'gps-estado';
+      est.textContent = err.code === 1
+        ? 'No se ha dado permiso de ubicación. Actívalo en los ajustes del navegador o escribe las coordenadas.'
+        : 'No se pudo obtener la ubicación. Inténtalo de nuevo al aire libre o escríbela a mano.';
+    }, { enableHighAccuracy:true, timeout:20000, maximumAge:30000 });
+  });
+
+  /* ---------- Fotos ---------- */
+  $('btnCamara').addEventListener('click', function(){ $('inCamara').click(); });
+  $('btnGaleria').addEventListener('click', function(){ $('inGaleria').click(); });
+  $('inCamara').addEventListener('change', manejarFotos);
+  $('inGaleria').addEventListener('change', manejarFotos);
+
+  function manejarFotos(ev){
+    var archivos = Array.prototype.slice.call(ev.target.files || []);
+    ev.target.value = '';
+    var libres = CONFIG.maxFotos - fotos.length;
+    if (archivos.length > libres) alertaSuave('Máximo ' + CONFIG.maxFotos + ' fotos por avistamiento.');
+    archivos.slice(0, Math.max(0, libres)).forEach(function(f){
+      comprimir(f, 1600, 0.82).then(function(r){ fotos.push(r); pintarFotos(); })
+        .catch(function(){ alertaSuave('No se pudo leer una de las fotos.'); });
+    });
+  }
+
+  function comprimir(file, max, calidad){
+    return new Promise(function(ok, ko){
+      var url = URL.createObjectURL(file), img = new Image();
+      img.onload = function(){
+        var w = img.naturalWidth, h = img.naturalHeight, k = Math.min(1, max / Math.max(w, h));
+        var c = document.createElement('canvas'); c.width = Math.round(w*k); c.height = Math.round(h*k);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        URL.revokeObjectURL(url);
+        var dataUrl = c.toDataURL('image/jpeg', calidad);
+        ok({ data: dataUrl.split(',')[1], tipo: 'image/jpeg', url: dataUrl });
+      };
+      img.onerror = function(){ URL.revokeObjectURL(url); ko(); };
+      img.src = url;
+    });
+  }
+
+  function pintarFotos(){
+    var cont = $('miniaturas'); cont.innerHTML = '';
+    $('fotoVacia').classList.toggle('oculto', fotos.length > 0);
+    fotos.forEach(function(f, i){
+      var d = document.createElement('div'); d.className = 'mini';
+      var im = document.createElement('img'); im.src = f.url; im.alt = 'Foto ' + (i+1);
+      var b = document.createElement('button'); b.type = 'button'; b.setAttribute('aria-label','Quitar foto'); b.textContent = '×';
+      b.onclick = function(){ fotos.splice(i,1); pintarFotos(); };
+      d.appendChild(im); d.appendChild(b); cont.appendChild(d);
+    });
+  }
+
+  function alertaSuave(msg){ var r = $('resumenError'); r.textContent = msg; r.classList.remove('oculto'); }
+
+  /* ---------- Validación ---------- */
+  function validar(){
+    var f = [];
+    var rep = valorRadio('reporta');
+    if (!rep) f.push('indica quién reporta');
+    if (rep === 'Empresa de avistamiento' && !$('empresa').value) f.push('elige la empresa');
+    if (!fotos.length) f.push('añade al menos una foto');
+    if (!$('especie').value) f.push('elige la especie');
+    if (!(Number($('individuos').value) >= 1)) f.push('indica el nº de individuos');
+    if (!$('fecha').value || !$('hora').value) f.push('indica fecha y hora');
+    var hayCoord = $('lat').value || $('lon').value;
+    var c = hayCoord ? revisarCoordenadas() : null;
+    if (hayCoord && !c) f.push('revisa las coordenadas (mira el mensaje debajo de ellas)');
+    if (!$('lugar').value.trim() && !c) f.push('indica el lugar o las coordenadas');
+    return f;
+  }
+
+  function uid(){
+    try { if (crypto.randomUUID) return crypto.randomUUID(); } catch(e){}
+    return Date.now().toString(36) + Math.random().toString(36).slice(2);
+  }
+
+  function recoger(){
+    var comp = Array.prototype.map.call(document.querySelectorAll('input[name="comportamiento"]:checked'), function(i){ return i.value; });
+    var rep = valorRadio('reporta');
+    var c = revisarCoordenadas() || { lat: '', lon: '' };
+    return {
+      uid: uid(),
+      reporta: rep,
+      empresa: rep === 'Empresa de avistamiento' ? $('empresa').value : '',
+      observador: $('observador').value, contacto: $('contacto').value,
+      especie: $('especie').value, especieDetalle: $('especieDetalle').value,
+      identificacion: $('identificacion').value,
+      individuos: $('individuos').value, crias: $('crias').value,
+      lat: c.lat, lon: c.lon,
+      precision: $('lat').dataset.precision || '',
+      lugar: $('lugar').value, fecha: $('fecha').value, hora: $('hora').value,
+      comportamiento: comp,
+      interaccion: valorRadio('interaccion'), interaccionDetalle: $('interaccionDetalle').value,
+      observaciones: $('observaciones').value,
+      fotos: fotos.map(function(f){ return { data: f.data, tipo: f.tipo }; })
+    };
+  }
+
+  /* ---------- Envío ---------- */
+  function ErrorValidacion(msg){ this.message = msg; this.validacion = true; }
+
+  function enviarAlServidor(datos){
+    if (DEMO) return new Promise(function(ok){ setTimeout(function(){ ok({ ok:true, id:'AV-DEMO-' + Math.floor(Math.random()*900+100) }); }, 900); });
+    return fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // evita la comprobación CORS previa
+      body: JSON.stringify(datos)
+    }).then(function(r){ return r.json(); }).then(function(r){
+      if (r && r.ok) return r;
+      throw new ErrorValidacion((r && r.error) || 'Error desconocido');
+    });
+  }
+
+  $('form').addEventListener('submit', function(ev){
+    ev.preventDefault();
+    var errores = validar();
+    if (errores.length){
+      alertaSuave('Antes de enviar: ' + errores.join(', ') + '.');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+    $('resumenError').classList.add('oculto');
+    var datos = recoger();
+    escribir(CLAVE_PERFIL, { reporta: datos.reporta, empresa: datos.empresa, observador: datos.observador, contacto: datos.contacto });
+
+    var btn = $('btnEnviar'); btn.disabled = true; btn.textContent = 'Enviando…';
+    var fin = function(){ btn.disabled = false; btn.textContent = 'Enviar avistamiento'; };
+
+    if (!navigator.onLine){ guardarPendiente(datos).then(fin); return; }
+    enviarAlServidor(datos).then(function(r){ fin(); exito(r.id); })
+      .catch(function(err){
+        fin();
+        if (err && err.validacion){ alertaSuave('No se pudo guardar: ' + err.message); window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
+        guardarPendiente(datos);
+      });
+  });
+
+  function guardarPendiente(datos){
+    return cola.poner(datos).then(function(){ exito(null); }).catch(function(){
+      alertaSuave('No hay conexión y no se ha podido guardar en el móvil. No cierres esta página y vuelve a pulsar Enviar cuando tengas cobertura.');
+    });
+  }
+
+  var procesando = false;
+  function procesarPendientes(){
+    cola.todos().then(function(lista){
+      var aviso = $('avisoPendientes');
+      if (!lista || !lista.length){ aviso.classList.add('oculto'); return; }
+      aviso.textContent = '⏳ Tienes ' + lista.length + ' avistamiento(s) guardado(s) en el móvil. Se enviarán solos en cuanto haya cobertura (con esta página abierta).';
+      aviso.classList.remove('oculto');
+      if (!navigator.onLine || procesando) return;
+      procesando = true;
+      var siguiente = lista[0];
+      enviarAlServidor(siguiente).then(function(){ return cola.quitar(siguiente.uid); })
+        .catch(function(err){ if (err && err.validacion) return cola.quitar(siguiente.uid); throw err; })
+        .then(function(){ procesando = false; procesarPendientes(); })
+        .catch(function(){ procesando = false; });
+    }).catch(function(){});
+  }
+  window.addEventListener('online', function(){ procesarPendientes(); actualizarConfig(); });
+  setInterval(procesarPendientes, 60000);
+
+  /* ---------- Pantallas ---------- */
+  function exito(id){
+    $('form').classList.add('oculto');
+    $('pantallaExito').classList.remove('oculto');
+    if (id){
+      $('exitoTexto').textContent = 'Se ha registrado correctamente con el código:';
+      $('exitoCodigo').textContent = id; $('exitoCodigo').classList.remove('oculto');
+    } else {
+      $('exitoTexto').textContent = 'No hay cobertura ahora mismo. Lo hemos guardado en tu móvil y se enviará solo cuando vuelvas a tener conexión. Si cierras la página, ábrela de nuevo al volver a puerto.';
+      $('exitoCodigo').classList.add('oculto');
+    }
+    window.scrollTo({ top: 0 });
+    procesarPendientes();
+  }
+
+  $('btnOtro').addEventListener('click', function(){
+    $('form').reset(); fotos = []; pintarFotos();
+    delete $('lat').dataset.precision;
+    $('gpsEstado').className = 'gps-estado';
+    $('gpsEstado').textContent = 'Pulsa el botón estando en el lugar del avistamiento, o escribe las coordenadas.';
+    revisarCoordenadas();
+    ponerAhora(); cargarPerfil(); actualizar();
+    $('pantallaExito').classList.add('oculto'); $('form').classList.remove('oculto');
+    window.scrollTo({ top: 0 });
+  });
+
+  /* ---------- Inicio ---------- */
+  pintarListas(); ponerAhora(); cargarPerfil(); actualizar(); pintarFotos(); procesarPendientes(); actualizarConfig();
+
+  // Para pruebas automáticas
+  window.__secac = { parsearUna: parsearUna, parsearPar: parsearPar };
+})();
+</script>
+</body>
+</html>
